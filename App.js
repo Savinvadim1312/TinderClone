@@ -8,7 +8,7 @@ import MatchesScreen from './src/screens/MatchesScreen';
 const App = () => {
   return (
     <View style={styles.pageContainer}>
-      <MatchesScreen />
+      <HomeScreen />
     </View>
   );
 };
