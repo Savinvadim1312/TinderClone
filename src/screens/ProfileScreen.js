@@ -7,10 +7,15 @@ import {
   Pressable,
   TextInput,
   Alert,
+  Image,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {Auth, DataStore} from 'aws-amplify';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 import {User} from '../models/';
+import {request, PERMISSIONS} from 'react-native-permissions';
 
 const ProfileScreen = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +24,18 @@ const ProfileScreen = () => {
   const [bio, setBio] = useState('');
   const [gender, setGender] = useState();
   const [lookingFor, setLookingFor] = useState();
+
+  const [newImageLocalUri, setNewImageLocalUri] = useState(null);
+
+  useEffect(() => {
+    const perm =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.PHOTO_LIBRARY
+        : PERMISSIONS.ANDROID.CAMERA;
+    request(perm).then(status => {
+      console.log(status);
+    });
+  }, []);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -81,6 +98,20 @@ const ProfileScreen = () => {
     Alert.alert('User saved successfully');
   };
 
+  const pickImage = () => {
+    launchImageLibrary(
+      {mediaType: 'mixed'},
+      ({didCancel, errorCode, errorMessage, assets}) => {
+        if (didCancel || errorCode) {
+          console.warn('canceled or error');
+          console.log(errorMessage);
+          return;
+        }
+        setNewImageLocalUri(assets[0].uri);
+      },
+    );
+  };
+
   const signOut = async () => {
     await DataStore.clear();
     Auth.signOut();
@@ -88,7 +119,15 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
+        <Image
+          source={{uri: newImageLocalUri ? newImageLocalUri : user?.image}}
+          style={{width: 100, height: 100, borderRadius: 50}}
+        />
+        <Pressable onPress={pickImage}>
+          <Text>Change image</Text>
+        </Pressable>
+
         <TextInput
           style={styles.input}
           placeholder="Name..."
@@ -132,7 +171,7 @@ const ProfileScreen = () => {
         <Pressable onPress={signOut} style={styles.button}>
           <Text>Sign out</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

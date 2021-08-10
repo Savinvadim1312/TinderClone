@@ -9723,6 +9723,27 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"react-native-image-picker@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "react-native-image-picker@npm:4.0.6"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 275ba92c66348a2d2842a6ddbec30063229b8318dac4651a143654f0a1a61e1e4efd7e8baf24dc1aef3e9431cef10eee7c7e7a5783b98d7947a21e1a6f48e93c
+  languageName: node
+  linkType: hard
+
+"react-native-permissions@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "react-native-permissions@npm:3.0.5"
+  peerDependencies:
+    react: ">=16.13.1"
+    react-native: ">=0.63.3"
+    react-native-windows: ">=0.62.0"
+  checksum: 1e7f35375c2e2a3862b835f33543fd060a48bc9f09827ee364b449d94615d53f9661863db5f5f6e8991df5099e2a298d0c84f11aa979a836fddda081e79874ab
+  languageName: node
+  linkType: hard
+
 "react-native-reanimated@npm:^2.0.0":
   version: 2.0.0
   resolution: "react-native-reanimated@npm:2.0.0"
@@ -11106,6 +11127,8 @@ resolve@^2.0.0-next.3:
     react: 17.0.1
     react-native: 0.64.2
     react-native-gesture-handler: ^1.10.3
+    react-native-image-picker: ^4.0.6
+    react-native-permissions: ^3.0.5
     react-native-reanimated: ^2.0.0
     react-native-vector-icons: ^8.1.0
     react-test-renderer: 17.0.1
