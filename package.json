@@ -10,6 +10,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.15.5",
+    "@react-native-community/netinfo": "^6.0.0",
+    "@react-native-picker/picker": "^1.16.5",
+    "amazon-cognito-identity-js": "^5.0.6",
+    "aws-amplify": "^4.2.2",
+    "aws-amplify-react-native": "^5.0.3",
     "react": "17.0.1",
     "react-native": "0.64.2",
     "react-native-gesture-handler": "^1.10.3",

@@ -6,9 +6,15 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Amplify from 'aws-amplify';
+import {withAuthenticator} from 'aws-amplify-react-native';
+import config from './src/aws-exports';
 
 import HomeScreen from './src/screens/HomeScreen';
 import MatchesScreen from './src/screens/MatchesScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+
+Amplify.configure(config);
 
 const App = () => {
   const [activeScreen, setActiveScreen] = useState('HOME');
@@ -38,11 +44,19 @@ const App = () => {
               color={activeScreen === 'CHAT' ? activeColor : color}
             />
           </Pressable>
-          <FontAwesome name="user" size={30} color={color} />
+
+          <Pressable onPress={() => setActiveScreen('PROFILE')}>
+            <FontAwesome
+              name="user"
+              size={30}
+              color={activeScreen === 'PROFILE' ? activeColor : color}
+            />
+          </Pressable>
         </View>
 
         {activeScreen === 'HOME' && <HomeScreen />}
         {activeScreen === 'CHAT' && <MatchesScreen />}
+        {activeScreen === 'PROFILE' && <ProfileScreen />}
       </View>
     </SafeAreaView>
   );
@@ -65,4 +79,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default withAuthenticator(App);
