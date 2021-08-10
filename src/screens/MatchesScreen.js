@@ -12,11 +12,10 @@ const MatchesScreen = () => {
     const user = await Auth.currentAuthenticatedUser();
     console.log('user ', user);
 
-    const dbUsers = await DataStore.query(
-      User,
-      u => u.sub === user.attributes.sub,
+    const dbUsers = await DataStore.query(User, u =>
+      u.sub('eq', user.attributes.sub),
     );
-    if (dbUsers.length < 0) {
+    if (!dbUsers || dbUsers.length === 0) {
       return;
     }
     setMe(dbUsers[0]);
@@ -31,13 +30,35 @@ const MatchesScreen = () => {
     const fetchMatches = async () => {
       console.log('me: ', me.id);
       const result = await DataStore.query(Match, m =>
-        m.or(m1 => m1.User1ID('eq', me.id).User2ID('eq', me.id)),
+        m
+          .isMatch('eq', true)
+          .or(m1 => m1.User1ID('eq', me.id).User2ID('eq', me.id)),
       );
       console.log('hole');
       console.log(result);
       setMatches(result);
     };
     fetchMatches();
+  }, [me]);
+
+  useEffect(() => {
+    const subscription = DataStore.observe(Match).subscribe(msg => {
+      console.log(msg.model, msg.opType, msg.element);
+
+      if (msg.opType === 'UPDATE') {
+        const newMatch = msg.element;
+        if (
+          newMatch.isMatch &&
+          (newMatch.User1ID === me.id || newMatch.User2ID === me.id)
+        ) {
+          console.log(
+            '+++++++++++++++++++ There is a new match waiting for you!',
+          );
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [me]);
 
   return (
@@ -47,11 +68,24 @@ const MatchesScreen = () => {
           New Matches
         </Text>
         <View style={styles.users}>
-          {matches.map(match => (
-            <View style={styles.user} key={match.User1.id}>
-              <Image source={{uri: match.User1.image}} style={styles.image} />
-            </View>
-          ))}
+          {matches.map(match => {
+            const matchUser =
+              match.User1ID === me.id ? match.User2 : match.User1;
+            if (!match.User1 || !match.User2) {
+              return (
+                <View style={styles.user} key={match.id}>
+                  <Image source={{}} style={styles.image} />
+                  <Text style={styles.name}>New match</Text>
+                </View>
+              );
+            }
+            return (
+              <View style={styles.user} key={match.id}>
+                <Image source={{uri: matchUser.image}} style={styles.image} />
+                <Text style={styles.name}>{matchUser.name}</Text>
+              </View>
+            );
+          })}
         </View>
       </View>
     </SafeAreaView>
@@ -85,6 +119,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 50,
+  },
+  name: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontWeight: 'bold',
   },
 });
 

@@ -1,12 +1,18 @@
 import 'react-native-gesture-handler';
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Pressable, SafeAreaView} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  SafeAreaView,
+  ActivityIndicator,
+} from 'react-native';
 
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Amplify, {Hub} from 'aws-amplify';
+import Amplify, {DataStore, Hub} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import config from './src/aws-exports';
 
@@ -23,6 +29,7 @@ Amplify.configure({
 
 const App = () => {
   const [activeScreen, setActiveScreen] = useState('HOME');
+  const [isUserLoading, setIsUserLoading] = useState(true);
 
   const color = '#b5b5b5';
   const activeColor = '#F76C6B';
@@ -31,13 +38,31 @@ const App = () => {
     // Create listener
     const listener = Hub.listen('datastore', async hubData => {
       const {event, data} = hubData.payload;
-      if (event === 'modelSynced') {
-        console.log(`Model has finished syncing: ${JSON.stringify(data)}`);
+      if (event === 'modelSynced' && data?.model?.name === 'User') {
+        console.log('User Model has finished syncing');
+        setIsUserLoading(false);
       }
     });
 
     return () => listener();
   }, []);
+
+  const renderPage = () => {
+    if (activeScreen === 'HOME') {
+      return <HomeScreen isUserLoading={isUserLoading} />;
+    }
+
+    if (isUserLoading) {
+      return <ActivityIndicator style={{flex: 1}} />;
+    }
+
+    if (activeScreen === 'CHAT') {
+      return <MatchesScreen />;
+    }
+    if (activeScreen === 'PROFILE') {
+      return <ProfileScreen />;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.root}>
@@ -72,9 +97,7 @@ const App = () => {
           </Pressable>
         </View>
 
-        {activeScreen === 'HOME' && <HomeScreen />}
-        {activeScreen === 'CHAT' && <MatchesScreen />}
-        {activeScreen === 'PROFILE' && <ProfileScreen />}
+        {renderPage()}
       </View>
     </SafeAreaView>
   );

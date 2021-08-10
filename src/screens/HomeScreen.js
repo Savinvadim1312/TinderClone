@@ -11,7 +11,7 @@ import Card from '../components/TinderCard';
 
 import AnimatedStack from '../components/AnimatedStack';
 
-const HomeScreen = () => {
+const HomeScreen = ({isUserLoading}) => {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [me, setMe] = useState(null);
@@ -20,25 +20,27 @@ const HomeScreen = () => {
     const getCurrentUser = async () => {
       const user = await Auth.currentAuthenticatedUser();
 
-      const dbUsers = await DataStore.query(
-        User,
-        u => u.sub === user.attributes.sub,
+      const dbUsers = await DataStore.query(User, u =>
+        u.sub('eq', user.attributes.sub),
       );
-      if (dbUsers.length < 0) {
+      if (!dbUsers || dbUsers.length === 0) {
         return;
       }
       setMe(dbUsers[0]);
     };
     getCurrentUser();
-  }, []);
+  }, [isUserLoading]);
 
   useEffect(() => {
+    if (isUserLoading) {
+      return;
+    }
     const fetchUsers = async () => {
       const fetchedUsers = await DataStore.query(User);
       setUsers(fetchedUsers);
     };
     fetchUsers();
-  }, []);
+  }, [isUserLoading]);
 
   const onSwipeLeft = () => {
     if (!currentUser || !me) {
@@ -65,13 +67,7 @@ const HomeScreen = () => {
       match.User1ID('eq', currentUser.id).User2ID('eq', me.id),
     );
 
-    console.log('hisMatches');
-    console.log('User1 ', currentUser.id);
-    console.log('User2 ', me.id);
-    console.log(hisMatches);
-
     if (hisMatches.length > 0) {
-      console.log('Yay, this is a new match');
       const hisMatch = hisMatches[0];
       DataStore.save(
         Match.copyOf(hisMatch, updated => (updated.isMatch = true)),
