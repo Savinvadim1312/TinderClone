@@ -1,12 +1,12 @@
 import 'react-native-gesture-handler';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Pressable, SafeAreaView} from 'react-native';
 
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Amplify from 'aws-amplify';
+import Amplify, {Hub} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import config from './src/aws-exports';
 
@@ -14,13 +14,31 @@ import HomeScreen from './src/screens/HomeScreen';
 import MatchesScreen from './src/screens/MatchesScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 
-Amplify.configure(config);
+Amplify.configure({
+  ...config,
+  Analytics: {
+    disabled: true,
+  },
+});
 
 const App = () => {
   const [activeScreen, setActiveScreen] = useState('HOME');
 
   const color = '#b5b5b5';
   const activeColor = '#F76C6B';
+
+  useEffect(() => {
+    // Create listener
+    const listener = Hub.listen('datastore', async hubData => {
+      const {event, data} = hubData.payload;
+      if (event === 'modelSynced') {
+        console.log(`Model has finished syncing: ${JSON.stringify(data)}`);
+      }
+    });
+
+    return () => listener();
+  }, []);
+
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.pageContainer}>
