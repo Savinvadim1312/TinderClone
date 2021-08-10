@@ -48,5 +48,11 @@
         }
       }
     }
+  },
+  "storage": {
+    "s348cdd070": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation"
+    }
   }
 }
