@@ -13,6 +13,7 @@ import AnimatedStack from '../components/AnimatedStack';
 
 const HomeScreen = ({isUserLoading}) => {
   const [users, setUsers] = useState([]);
+  const [matchesIds, setMatchesIds] = useState(null); // all user ids of people who we already matched
   const [currentUser, setCurrentUser] = useState(null);
   const [me, setMe] = useState(null);
 
@@ -32,15 +33,39 @@ const HomeScreen = ({isUserLoading}) => {
   }, [isUserLoading]);
 
   useEffect(() => {
-    if (isUserLoading) {
+    if (!me) {
+      return;
+    }
+    const fetchMatches = async () => {
+      const result = await DataStore.query(Match, m =>
+        m
+          .isMatch('eq', true)
+          .or(m1 => m1.User1ID('eq', me.id).User2ID('eq', me.id)),
+      );
+      setMatchesIds(
+        result.map(match =>
+          match.User1ID === me.id ? match.User2ID : match.User1ID,
+        ),
+      );
+    };
+    fetchMatches();
+  }, [me]);
+
+  useEffect(() => {
+    if (isUserLoading || !me || matchesIds === null) {
       return;
     }
     const fetchUsers = async () => {
-      const fetchedUsers = await DataStore.query(User);
+      let fetchedUsers = await DataStore.query(User, user =>
+        user.gender('eq', me.lookingFor),
+      );
+
+      fetchedUsers = fetchedUsers.filter(u => !matchesIds.includes(u.id));
+
       setUsers(fetchedUsers);
     };
     fetchUsers();
-  }, [isUserLoading]);
+  }, [isUserLoading, me, matchesIds]);
 
   const onSwipeLeft = () => {
     if (!currentUser || !me) {
